@@ -1,0 +1,111 @@
+
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Chat Log</title>
+                <style>
+                    body { 
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                        background-color: #e3edf7; 
+                        padding: 40px; 
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                    }
+                    
+                    .config-container {
+                        width: 700px;
+                        background: #ffffff;
+                        padding: 15px;
+                        border-radius: 12px;
+                        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+                        text-align: left;
+                        font-size: 16px;
+                        color: #333;
+                        margin-bottom: 15px; /* Space before chat container */
+                    }
+                    
+                    .chat-container {
+                        width: 700px; 
+                        height: 70vh; /* Fixed height */
+                        background: #ffffff; 
+                        padding: 20px; 
+                        border-radius: 15px; 
+                        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2); 
+                        display: flex;
+                        flex-direction: column;
+                        overflow-y: auto; /* Enables scrolling if chat is long */
+                    }
+                    
+                    .message { 
+                        margin: 15px 0; 
+                        padding: 12px 15px; 
+                        border-radius: 8px; 
+                        max-width: 80%; 
+                        word-wrap: break-word; 
+                        font-size: 16px;
+                        line-height: 1.5;
+                        position: relative;
+                    }
+                    .user { 
+                        background: #0078ff; 
+                        color: #ffffff; 
+                        text-align: right; 
+                        align-self: flex-end;
+                        border-top-right-radius: 0;
+                        box-shadow: 2px 2px 10px rgba(0, 120, 255, 0.3);
+                    }
+                    .assistant { 
+                        background: #d4edda; 
+                        color: #155724; 
+                        text-align: left; 
+                        align-self: flex-start;
+                        border-top-left-radius: 0;
+                        box-shadow: 2px 2px 10px rgba(72, 180, 97, 0.3);
+                    }
+                    .system { 
+                        background: #f8f9fa; 
+                        color: #6c757d; 
+                        font-style: italic; 
+                        text-align: center; 
+                        border-left: 3px solid #6c757d;
+                        padding-left: 15px;
+                        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+                    }
+                </style>
+            </head>
+            <body>
+            
+                <div class="config-container">
+                <h2>Configuration Settings</h2>
+                    <strong>Top-p:</strong> 1<br>
+                    <strong>Temperature:</strong> 0.2<br>
+                    <strong>INS:</strong> basic3_peda1 FAST<br>
+                    <strong>Problem:</strong> Bacteria Explosion<br>
+                </div>
+                <div class='chat-container'>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                There will be 32 bacteria after the fifth prolieration
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                That's correct! Well done. You've identified that the number of bacteria doubles with each proliferation, leading to an exponential growth pattern. Can you explain how you arrived at this answer?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                As for every proliferation, the number doubles, it can be represented as 2^n (2 to the power n). Here n is the number of proliferations. For example, 2^3 = 2 * 2 * 2 = 8. This is an exponential growth process where the value grows quickly as the number of proliferations increases. So continuing this for 5 times, 2*2*2*2*2 or 2^5 is 32 which is the answer. Is this the explanation?
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                Exactly! You've got it right. By recognizing that the number of bacteria doubles with each proliferation, you correctly applied the formula <span class="math">\(2^n\)</span>, where <span class="math">\(n\)</span> is the number of proliferations. For 5 proliferations, <span class="math">\(2^5 = 32\)</span>. Great job understanding and explaining the exponential growth pattern! Can you think of another real-world scenario where exponential growth might apply?
+            </div>
+            
