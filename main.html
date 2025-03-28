@@ -131,8 +131,16 @@
                 .catch(error => {
                     document.getElementById("chat-container").innerHTML = `<p style="color: red; text-align: center;">File not found: ${fileName}</p>`;
                 });
-        }
+        };
+// Render MathJax for LaTeX
+                    window.onload = function() {
+                        if (window.MathJax) {
+                            MathJax.typeset();
+                        }
+                    };
     </script>
+<script async src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                <script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 </body>
 </html>
