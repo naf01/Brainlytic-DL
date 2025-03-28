@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Log Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 500px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #0078ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #005bbf;
+        }
+
+        .chat-container {
+            margin-top: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Load Chat Log</h2>
+
+        <label for="instruction">Select Instruction Type:</label>
+        <select id="instruction">
+            <option value="basic1">basic1</option>
+            <option value="basic2">basic2</option>
+            <option value="basic3_peda1">basic3_peda1</option>
+            <option value="advanced">advanced</option>
+            <option value="SYSTEM_INSTRUCTIONS_SOCRATIC_QUESTIONING_SIMPLE">SYSTEM_INSTRUCTIONS_SOCRATIC_QUESTIONING_SIMPLE</option>
+            <option value="SYSTEM_INSTRUCTIONS_SCAFFOLDING_SIMPLE">SYSTEM_INSTRUCTIONS_SCAFFOLDING_SIMPLE</option>
+            <option value="basic1_socratic">basic1_socratic</option>
+            <option value="basic1_scaff">basic1_scaff</option>
+            <option value="basic2_socratic">basic2_socratic</option>
+            <option value="basic2_scaff">basic2_scaff</option>
+            <option value="advanced_socratic">advanced_socratic</option>
+            <option value="advanced_scaff">advanced_scaff</option>
+            <option value="SYSTEM_INSTRUCTIONS_SOCRATIC_QUESTIONING">SYSTEM_INSTRUCTIONS_SOCRATIC_QUESTIONING</option>
+            <option value="SYSTEM_INSTRUCTIONS_SCAFFOLDING">SYSTEM_INSTRUCTIONS_SCAFFOLDING</option>
+        </select>
+
+        <label for="pace">Select Pace:</label>
+        <select id="pace">
+            <option value="SLOW">SLOW</option>
+            <option value="FAST">FAST</option>
+        </select>
+
+        <label for="problem">Select Problem:</label>
+        <select id="problem">
+            <option value="Two Palindromes">Two Palindromes</option>
+            <option value="Bacteria">Bacteria</option>
+        </select>
+
+        <button onclick="loadChatLog()">Load File</button>
+    </div>
+
+    <div id="chat-container" class="chat-container">
+        <p style="text-align: center; color: gray;">Chat log will appear here...</p>
+    </div>
+
+    <script>
+        function loadChatLog() {
+            const instruction = document.getElementById("instruction").value;
+            const pace = document.getElementById("pace").value;
+            const problem = document.getElementById("problem").value;
+
+            // Construct the file name
+            const fileName = `Conversation_LOG_${problem}_${instruction}_${pace}.html`;
+
+            fetch(fileName)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("File not found");
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById("chat-container").innerHTML = data;
+                })
+                .catch(error => {
+                    document.getElementById("chat-container").innerHTML = `<p style="color: red; text-align: center;">File not found: ${fileName}</p>`;
+                });
+        }
+    </script>
+
+</body>
+</html>
