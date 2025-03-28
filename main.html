@@ -22,7 +22,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 500px;
+            width: 50%;
         }
 
         label {
@@ -99,7 +99,7 @@
         <label for="problem">Select Problem:</label>
         <select id="problem">
             <option value="Two Palindromes">Two Palindromes</option>
-            <option value="Bacteria">Bacteria</option>
+            <option value="Bacteria Explosion">Bacteria Explosion</option>
         </select>
 
         <button onclick="loadChatLog()">Load File</button>
@@ -116,7 +116,7 @@
             const problem = document.getElementById("problem").value;
 
             // Construct the file name
-            const fileName = `Response_log/INS_COMP/Problem 2/Conversation_LOG_${problem}_${instruction}_${pace}.html`;
+            const fileName = `Response_log/INS_COMP/Conversation_LOG_${problem}_${instruction}_${pace}.html`;
 
             fetch(fileName)
                 .then(response => {
