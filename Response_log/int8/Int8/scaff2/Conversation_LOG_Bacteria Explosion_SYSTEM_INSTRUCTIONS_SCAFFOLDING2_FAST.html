@@ -1,0 +1,171 @@
+
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Chat Log</title>
+                <style>
+                    body { 
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                        background-color: #e3edf7; 
+                        padding: 40px; 
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                    }
+                    
+                    .config-container {
+                        width: 700px;
+                        background: #ffffff;
+                        padding: 15px;
+                        border-radius: 12px;
+                        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+                        text-align: left;
+                        font-size: 16px;
+                        color: #333;
+                        margin-bottom: 15px; /* Space before chat container */
+                    }
+                    
+                    .chat-container {
+                        width: 700px; 
+                        height: 70vh; /* Fixed height */
+                        background: #ffffff; 
+                        padding: 20px; 
+                        border-radius: 15px; 
+                        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2); 
+                        display: flex;
+                        flex-direction: column;
+                        overflow-y: auto; /* Enables scrolling if chat is long */
+                    }
+                    
+                    .message { 
+                        margin: 15px 0; 
+                        padding: 12px 15px; 
+                        border-radius: 8px; 
+                        max-width: 80%; 
+                        word-wrap: break-word; 
+                        font-size: 16px;
+                        line-height: 1.5;
+                        position: relative;
+                    }
+                    .user { 
+                        background: #0078ff; 
+                        color: #ffffff; 
+                        text-align: right; 
+                        align-self: flex-end;
+                        border-top-right-radius: 0;
+                        box-shadow: 2px 2px 10px rgba(0, 120, 255, 0.3);
+                    }
+                    .assistant { 
+                        background: #d4edda; 
+                        color: #155724; 
+                        text-align: left; 
+                        align-self: flex-start;
+                        border-top-left-radius: 0;
+                        box-shadow: 2px 2px 10px rgba(72, 180, 97, 0.3);
+                    }
+                    .system { 
+                        background: #f8f9fa; 
+                        color: #6c757d; 
+                        font-style: italic; 
+                        text-align: center; 
+                        border-left: 3px solid #6c757d;
+                        padding-left: 15px;
+                        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+                    }
+                </style>
+            </head>
+            <body>
+            
+                <div class="config-container">
+                <h2>Configuration Settings</h2>
+                    <strong>Top-p:</strong> 1<br>
+                    <strong>Temperature:</strong> 0.2<br>
+                    <strong>INS:</strong> SYSTEM_INSTRUCTIONS_SCAFFOLDING2 FAST<br>
+                    <strong>Problem:</strong> Bacteria Explosion<br>
+                </div>
+                <div class='chat-container'>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                The answer is 32.
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                That’s interesting. Can you walk through your reasoning to verify your answer? How does the number of bacteria change with each proliferation?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                As for every proliferation, the number doubles, it can be represented as 2^n (2 to the power n). Here n is the number of proliferations. For example, 2^3 = 2 * 2 * 2 = 8. This is an exponential growth process where the value grows quickly as the number of proliferations increases. So continuing this for 5 times, 2*2*2*2*2 or 2^5 is 32
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                That’s a clear explanation. Let’s explore a similar example that uses the same concept. Suppose we start with 3 bacteria, and they double every hour. How many bacteria would there be after 4 hours? What’s the first thing we could try?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                Map this with the problem I just solved?
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                Exactly! Use the same approach. What formula or method might apply here? How does starting with 3 bacteria and doubling every hour affect the number of bacteria after 4 hours?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                We should use the same formula 2^n, but I am not quite understanding how to incorporate the initial number of bacteria.
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                Good start! When you begin with more than one bacterium, you multiply the initial amount by <span class="math">\(2^n\)</span>. So, if you start with 3 bacteria, how would you adjust the formula to reflect this initial amount? What do we already know, and what are we trying to find?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                We know what to do if there is just 1 bacteria. We are trying to find if there were 3 to begin with.
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                Exactly! If you start with 3 bacteria, you multiply 3 by <span class="math">\(2^n\)</span>. What is <span class="math">\(n\)</span> in this case, and how does that change the calculation? Can you try the next part on your own?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                it will be 3*2^n where n = 5, the answer will be 32*3 or 96.
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                That’s a good attempt. Remember, <span class="math">\(n\)</span> is the number of hours in this example, which is 4. So, how would you calculate <span class="math">\(3 \times 2^4\)</span>? What does <span class="math">\(2^4\)</span> equal, and then how do you incorporate the initial 3 bacteria?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                Oh I'm sorry. I mistook 4 for 5. It will be 3*2^4 or 48.
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                That’s interesting. Let’s break it down: <span class="math">\(2^4 = 16\)</span>. Now, multiply this by the initial number of bacteria, which is 3. What do you get? How does this step connect to what we started with?
+            </div>
+            
+            <div class='message user'>
+                <strong>Student:</strong><br>
+                48?
+            </div>
+            
+            <div class='message assistant'>
+                <strong>Assistant:</strong><br>
+                Exactly! <span class="math">\(3 \times 16 = 48\)</span>. This shows how the initial number of bacteria and the number of proliferations affect the final count. What strategy worked best for you here? How might you approach a new problem like this next time?
+            </div>
+            

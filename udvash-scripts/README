@@ -1,0 +1,3 @@
+First download the html website, right click -> save as -> html
+
+python .\scrapper.py --csv evaluation_results.csv --images "images" --start-id 1001 file_name.html
