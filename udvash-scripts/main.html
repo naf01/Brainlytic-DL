@@ -1,4 +1,3 @@
-<div class="solve-text mt-3"></div>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
@@ -54,6 +53,17 @@
 <div class="container py-4">
   <h1 class="text-center mb-4">📚 Student Solutions Viewer</h1>
 
+  <!-- Dropdown for selecting number of items per page -->
+  <div class="d-flex justify-content-end mb-3">
+    <label for="itemsPerPageSelect" class="form-label me-2 mt-1">প্রতি পৃষ্ঠায় দেখাও:</label>
+    <select id="itemsPerPageSelect" class="form-select w-auto">
+      <option value="5" selected>5</option>
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+    </select>
+  </div>
+
   <div id="content"></div>
 
   <nav>
@@ -69,7 +79,7 @@
 
 <script>
 let data = [];
-const itemsPerPage = 5;
+let itemsPerPage = 5; // Default 5 items
 let currentPage = 1;
 
 $(document).ready(function() {
@@ -88,6 +98,14 @@ $(document).ready(function() {
     error: function() {
       $('#content').html('<p class="text-danger">Failed to load data.</p>');
     }
+  });
+
+  // Change items per page when dropdown changes
+  $('#itemsPerPageSelect').on('change', function() {
+    itemsPerPage = parseInt($(this).val());
+    currentPage = 1; // Reset to first page
+    renderPage(currentPage);
+    setupPagination();
   });
 });
 
@@ -148,5 +166,6 @@ function changePage(page) {
   setupPagination();
 }
 </script>
+
 </body>
 </html>
