@@ -53,22 +53,29 @@
 <div class="container py-4">
   <h1 class="text-center mb-4">📚 Student Solutions Viewer</h1>
 
-  <!-- Dropdown for selecting number of items per page -->
+  <!-- Dropdown for selecting number of items per batch and batch -->
   <div class="d-flex justify-content-end mb-3">
-    <label for="itemsPerPageSelect" class="form-label me-2 mt-1">প্রতি পৃষ্ঠায় দেখাও:</label>
-    <select id="itemsPerPageSelect" class="form-select w-auto">
-      <option value="5" selected>5</option>
-      <option value="10">10</option>
-      <option value="15">15</option>
-      <option value="20">20</option>
-    </select>
+    <div class="me-3">
+      <label for="itemsPerPageSelect" class="form-label me-2">প্রতি ব্যাচে প্রশ্ন সংখ্যা:</label>
+      <select id="itemsPerPageSelect" class="form-select w-auto d-inline-block">
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="300">300</option>
+        <option value="500">500</option>
+      </select>
+    </div>
+    <div>
+      <label for="batchSelect" class="form-label me-2">ব্যাচ নম্বর:</label>
+      <select id="batchSelect" class="form-select w-auto d-inline-block">
+        <!-- Options will be generated dynamically -->
+      </select>
+    </div>
   </div>
 
   <div id="content"></div>
 
-  <nav>
-    <ul class="pagination" id="pagination"></ul>
-  </nav>
 </div>
 
 <!-- JQuery for AJAX -->
@@ -79,8 +86,9 @@
 
 <script>
 let data = [];
-let itemsPerPage = 5; // Default 5 items
+let itemsPerPage = 10; // Default 10 items
 let currentPage = 1;
+let totalPages = 1;
 
 $(document).ready(function() {
   $.ajax({
@@ -92,8 +100,8 @@ $(document).ready(function() {
         skipEmptyLines: true,
       });
       data = parsed.data;
-      renderPage(currentPage);
       setupPagination();
+      renderPage(currentPage);
     },
     error: function() {
       $('#content').html('<p class="text-danger">Failed to load data.</p>');
@@ -104,8 +112,14 @@ $(document).ready(function() {
   $('#itemsPerPageSelect').on('change', function() {
     itemsPerPage = parseInt($(this).val());
     currentPage = 1; // Reset to first page
-    renderPage(currentPage);
     setupPagination();
+    renderPage(currentPage);
+  });
+
+  // Change batch when dropdown changes
+  $('#batchSelect').on('change', function() {
+    currentPage = parseInt($(this).val());
+    renderPage(currentPage);
   });
 });
 
@@ -146,24 +160,14 @@ function renderPage(page) {
 }
 
 function setupPagination() {
-  const pageCount = Math.ceil(data.length / itemsPerPage);
-  let paginationHtml = "";
+  totalPages = Math.ceil(data.length / itemsPerPage);
 
-  for (let i = 1; i <= pageCount; i++) {
-    paginationHtml += `
-      <li class="page-item ${i === currentPage ? 'active' : ''}">
-        <button class="page-link" onclick="changePage(${i})">${i}</button>
-      </li>
-    `;
+  let batchOptions = "";
+  for (let i = 1; i <= totalPages; i++) {
+    batchOptions += `<option value="${i}" ${i === currentPage ? 'selected' : ''}>ব্যাচ ${i}</option>`;
   }
 
-  $('#pagination').html(paginationHtml);
-}
-
-function changePage(page) {
-  currentPage = page;
-  renderPage(page);
-  setupPagination();
+  $('#batchSelect').html(batchOptions);
 }
 </script>
 
