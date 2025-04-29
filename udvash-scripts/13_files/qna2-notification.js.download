@@ -1,0 +1,90 @@
+function GetNotificationCount() {
+    var qnANotificationCount = getCookie("QnANotificationCount");
+    if (qnANotificationCount != null && qnANotificationCount > 0) {
+        $("#notification_badge").removeClass("d-none").html(qnANotificationCount);
+    }
+    if (qnANotificationCount == null) {
+        $.ajax({
+            url: "/QnA/DisplayNotificationCount",
+            type: "POST",
+            //contentType: false, // Not to set any content header  
+            //processData: false, // Not to process data  
+            //data: formData,
+            beforeSend: function () {
+
+            },
+            success: function (data) {
+                if (data.hasOwnProperty("AutoLogout")) {
+                    if (data.AutoLogout == true) {
+                        window.location.href = "/Account/Logout";
+                    }
+                }
+                else if (data.hasOwnProperty("isSuccess")) {
+                    if (data.isSuccess) {
+                        if (data.notificationCount > 0) {
+                            $("#notification_badge").removeClass("d-none").html(data.notificationCount);
+                        }
+                        else {
+                            $("#notification_badge").addClass("d-none").html("");
+                        }
+                        setCookieInMinute("QnANotificationCount", data.notificationCount, 10);
+                    }
+                    else {
+
+                    }
+                }
+            },
+            complete: function () {
+
+            },
+            error: function (data) {
+
+            }
+        });
+    }
+}
+
+function GetNotificationCountForSingleQnA() {
+    $.ajax({
+        url: "/QnA/DisplayNotificationCount",
+        type: "POST",
+        //contentType: false, // Not to set any content header  
+        //processData: false, // Not to process data  
+        //data: formData,
+        beforeSend: function () {
+
+        },
+        success: function (data) {
+            if (data.hasOwnProperty("AutoLogout")) {
+                if (data.AutoLogout == true) {
+                    window.location.href = "/Account/Logout";
+                }
+            }
+            else if (data.hasOwnProperty("isSuccess")) {
+                if (data.isSuccess) {
+                    if (data.notificationCount > 0) {
+                        $("#notification_badge").removeClass("d-none").html(data.notificationCount);
+                    }
+                    else {
+                        $("#notification_badge").addClass("d-none").html("");
+                    }
+                    setCookieInMinute("QnANotificationCount", data.notificationCount, 10);
+                }
+                else {
+
+                }
+            }
+        },
+        complete: function () {
+
+        },
+        error: function (data) {
+
+        }
+    });
+}
+
+$(document).ready(function () {
+    GetNotificationCount();
+    //setInterval(GetNotificationCount, 1000);
+});

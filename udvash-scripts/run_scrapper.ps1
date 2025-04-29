@@ -1,7 +1,7 @@
 # Save this as run_scrapper.ps1
 
 # Loop from 1 to 17
-for ($i = 1; $i -le 29; $i++) {
+for ($i = 1; $i -le 26; $i++) {
     # Build the filename
     $htmlFile = ".\$i.html"
     
