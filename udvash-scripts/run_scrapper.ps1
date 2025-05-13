@@ -1,7 +1,7 @@
 # Save this as run_scrapper.ps1
 
 # Loop from 1 to 17
-for ($i = 1; $i -le 26; $i++) {
+for ($i = 32; $i -le 44; $i++) {
     # Build the filename
     $htmlFile = ".\$i.html"
     
@@ -9,7 +9,15 @@ for ($i = 1; $i -le 26; $i++) {
     Write-Output "Processing $htmlFile..."
     
     # Run the command
-    python .\scrapper.py --csv .\evaluation_results.csv --images .\images\ $htmlFile
+    try {
+        python .\scrapper.py --csv .\evaluation_results.csv --images .\images\ $htmlFile
+        if ($LASTEXITCODE -ne 0) {
+            throw "Python script failed with exit code $LASTEXITCODE"
+        }
+    } catch {
+        Write-Error "An error occurred: $_"
+        exit 1
+    }
 
     # Sleep for 30 seconds
     Start-Sleep -Seconds 30
