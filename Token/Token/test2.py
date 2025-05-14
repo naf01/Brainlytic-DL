@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import glob
 import os
 
-image_files = glob.glob('./Physics/*.jpg')
+image_files = glob.glob('/images/*.jpg')  # Adjust the path to your images
 
-for image_file in image_files:
+for image_file in image_files[:5]:
     print(f"Processing {image_file}...")
     image = Image.open(image_file).convert('RGB')
     data = np.array(image)
