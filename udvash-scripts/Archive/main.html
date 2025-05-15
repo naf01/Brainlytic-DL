@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Gemini Results Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #f8f9fa;
+            --border-color: #dadce0;
+            --text-color: #202124;
+            --token-color: #5f6368;
+            --header-bg: #f1f3f4;
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --hover-color: #e8f0fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .select-container {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #0d62c9;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+        }
+
+        .navigation button {
+            flex: 1;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .block {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .block-header {
+            background-color: var(--header-bg);
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .token-count {
+            font-size: 13px;
+            color: var(--token-color);
+            background-color: rgba(0,0,0,0.05);
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .block-content {
+            padding: 15px;
+        }
+
+        /* Block 1 - Images */
+        .images-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .image-wrapper {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .image-caption {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--token-color);
+        }
+
+        /* Block 2 - Solution Text */
+        .solution-text {
+            white-space: pre-wrap;
+            font-family: 'Noto Sans Bengali', Arial, sans-serif;
+        }
+
+        /* Blocks 3 & 4 - Model Responses */
+        .model-response {
+            white-space: pre-wrap;
+            font-family: 'Noto Sans Bengali', Arial, sans-serif;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 3px solid var(--primary-color);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        .status-message {
+            padding: 20px;
+            text-align: center;
+            color: var(--token-color);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .select-container, .navigation {
+                width: 100%;
+            }
+            
+            .image-wrapper {
+                flex: 1 0 100%;
+            }
+        }
+
+        /* JSON highlighting */
+        .json-key {
+            color: #0d62c9;
+        }
+        .json-string {
+            color: #008000;
+        }
+        .json-number {
+            color: #b22222;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Math Gemini Results Viewer</h1>
+        <p>View and compare model evaluations of math solutions</p>
+    </header>
+
+    <div class="controls">
+        <div class="select-container">
+            <select id="question-selector">
+                <option value="">Loading questions...</option>
+            </select>
+        </div>
+        <div class="navigation">
+            <button id="prev-btn">◀ Previous</button>
+            <button id="next-btn">Next ▶</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Block 1: Images -->
+        <div class="block">
+            <div class="block-header">
+                <span>Question and Solution Images</span>
+                <span id="question-id" class="token-count">Question ID: -</span>
+            </div>
+            <div class="block-content">
+                <div class="images-container" id="images-container">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 2: Solution Text -->
+        <div class="block">
+            <div class="block-header">
+                <span>Expected Solution</span>
+                <span id="marks" class="token-count">Marks: -</span>
+            </div>
+            <div class="block-content">
+                <div class="solution-text" id="solution-text">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 3: Gemini 2.0 Flash Response -->
+        <div class="block">
+            <div class="block-header">
+                <span>Gemini 2.0 Flash</span>
+                <div>
+                    <span id="gemini20-input-tokens" class="token-count">Input: - tokens</span>
+                    <span id="gemini20-output-tokens" class="token-count">Output: - tokens</span>
+                </div>
+            </div>
+            <div class="block-content">
+                <div class="model-response" id="gemini20-response">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 4: Gemini 2.5 Flash Response -->
+        <div class="block">
+            <div class="block-header">
+                <span>Gemini 2.5 Flash</span>
+                <div>
+                    <span id="gemini25-input-tokens" class="token-count">Input: - tokens</span>
+                    <span id="gemini25-output-tokens" class="token-count">Output: - tokens</span>
+                </div>
+            </div>
+            <div class="block-content">
+                <div class="model-response" id="gemini25-response">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 5: Rubric -->
+        <div class="block">
+            <div class="block-header">
+                <span>Marking Rubric</span>
+            </div>
+            <div class="block-content">
+                <div class="solution-text" id="rubric-text">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base directory structure
+        const baseDir = 'UDV';
+        const subject = 'Math';
+        const evaluatedDir = `${baseDir}/${subject}/Question Images/Evaluated Images`;
+        const answerDir = `${baseDir}/${subject}/Answer Images`;
+        
+        // Data storage
+        let csvData = [];
+        let currentIndex = 0;
+        
+        // DOM Elements
+        const questionSelector = document.getElementById('question-selector');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        // Load CSV data using Papa Parse
+        async function loadCSVData() {
+            try {
+                const response = await fetch('Math_gemini_results_temp.csv');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch CSV data');
+                }
+                
+                const csvText = await response.text();
+                
+                // Use Papa Parse to parse the CSV
+                Papa.parse(csvText, {
+                    header: true,
+                    complete: function(results) {
+                        csvData = results.data;
+                        
+                        // Debug: Log the first row and column names
+                        if (csvData.length > 0) {
+                            console.log('CSV Column Names:', Object.keys(csvData[0]));
+                            console.log('First row sample:', csvData[0]);
+                        }
+                        
+                        // Populate question selector
+                        populateQuestionSelector();
+                        
+                        // Load the first question
+                        if (csvData.length > 0) {
+                            loadQuestion(0);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        showErrorMessage('Failed to parse CSV data. Please check the file format.');
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                showErrorMessage('Failed to load data. Please refresh the page.');
+            }
+        }
+        
+        // Process model response
+        function processModelResponse(response) {
+            if (!response) return '<span class="status-message">No response available</span>';
+            
+            // For debugging
+            console.log('Processing response:', response.substring(0, 100) + '...');
+            
+            // Check if it's a JSON response (might be surrounded by markdown code blocks)
+            if (response.includes('```json')) {
+                try {
+                    // Extract JSON content from code blocks
+                    const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        const jsonContent = jsonMatch[1].trim();
+                        return formatJSON(jsonContent);
+                    }
+                } catch (e) {
+                    console.error('Error extracting JSON from response', e);
+                }
+            }
+            
+            // If it starts with ERROR:, format it as an error message
+            if (response.startsWith('ERROR:')) {
+                return `<div class="status-message" style="color: #d93025;">${response}</div>`;
+            }
+            
+            // If not JSON or extraction failed, return the plain text
+            return `<pre>${response}</pre>`;
+        }
+        
+        // Populate the question selector dropdown
+        function populateQuestionSelector() {
+            if (!csvData.length) {
+                questionSelector.innerHTML = '<option value="">No data available</option>';
+                return;
+            }
+            
+            questionSelector.innerHTML = '';
+            
+            csvData.forEach((row, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Question ${row.question_id} - ${row.image_filename}`;
+                questionSelector.appendChild(option);
+            });
+            
+            // Add event listener
+            questionSelector.addEventListener('change', () => {
+                const selectedIndex = parseInt(questionSelector.value);
+                if (!isNaN(selectedIndex)) {
+                    loadQuestion(selectedIndex);
+                }
+            });
+        }
+        
+        // Load question data and display
+        function loadQuestion(index) {
+            if (index < 0 || index >= csvData.length) {
+                console.error('Invalid index:', index);
+                return;
+            }
+            
+            currentIndex = index;
+            questionSelector.value = index;
+            
+            const questionData = csvData[index];
+            
+            // Update question ID and marks
+            document.getElementById('question-id').textContent = `Question ID: ${questionData.question_id}`;
+            document.getElementById('marks').textContent = `Marks: ${questionData.Marks}`;
+            
+            // Load images
+            loadImages(questionData);
+            
+            // Load solution text
+            document.getElementById('solution-text').innerHTML = formatMathText(questionData.solve_text);
+            
+            // Load rubric text
+            document.getElementById('rubric-text').innerHTML = formatMathText(questionData.rubric);
+            
+            // Load Gemini 2.0 Flash response
+            const gemini20Response = questionData["Gemini2.0Flash_response"];
+            const gemini20InputTokens = questionData["Gemini2.0Flash_input_tokens"];
+            const gemini20OutputTokens = questionData["Gemini2.0Flash_output_tokens"];
+            
+            document.getElementById('gemini20-input-tokens').textContent = `Input: ${gemini20InputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini20-output-tokens').textContent = `Output: ${gemini20OutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini20-response').innerHTML = processModelResponse(gemini20Response);
+            
+            // Load Gemini 2.5 Flash response
+            const gemini25Response = questionData["Gemini2.5Flash_response"];
+            const gemini25InputTokens = questionData["Gemini2.5Flash_input_tokens"];
+            const gemini25OutputTokens = questionData["Gemini2.5Flash_output_tokens"];
+            
+            document.getElementById('gemini25-input-tokens').textContent = `Input: ${gemini25InputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25-output-tokens').textContent = `Output: ${gemini25OutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25-response').innerHTML = processModelResponse(gemini25Response);
+            
+            // Update navigation button states
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === csvData.length - 1;
+            
+            // For debugging - log the responses
+            console.log('Gemini 2.0 Flash response:', gemini20Response);
+            console.log('Gemini 2.5 Flash response:', gemini25Response);
+        }
+        
+        // Load question and solution images
+        function loadImages(questionData) {
+            const imagesContainer = document.getElementById('images-container');
+            imagesContainer.innerHTML = '';
+            
+            // Question image
+            const questionImageFilename = questionData.image_filename;
+            const questionImagePath = `${evaluatedDir}/${questionImageFilename}`;
+            
+            const questionImageWrapper = document.createElement('div');
+            questionImageWrapper.className = 'image-wrapper';
+            
+            const questionImage = document.createElement('img');
+            questionImage.src = questionImagePath;
+            questionImage.alt = 'Student Solution';
+            questionImage.onerror = () => {
+                questionImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjFmMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM4ODg4ODgiPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
+            };
+            
+            const questionImageCaption = document.createElement('div');
+            questionImageCaption.className = 'image-caption';
+            questionImageCaption.textContent = `Question Image: ${questionImageFilename}`;
+            
+            questionImageWrapper.appendChild(questionImage);
+            questionImageWrapper.appendChild(questionImageCaption);
+            imagesContainer.appendChild(questionImageWrapper);
+            
+            // Solution image (if available)
+            if (questionData.solution_image_id) {
+                const solutionImageId = parseInt(questionData.solution_image_id);
+                if (!isNaN(solutionImageId)) {
+                    const solutionImagePath = `${answerDir}/${solutionImageId}.png`;
+                    
+                    const solutionImageWrapper = document.createElement('div');
+                    solutionImageWrapper.className = 'image-wrapper';
+                    
+                    const solutionImage = document.createElement('img');
+                    solutionImage.src = solutionImagePath;
+                    solutionImage.alt = 'Solution Image';
+                    solutionImage.onerror = () => {
+                        solutionImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjFmMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM4ODg4ODgiPk5vIFNvbHV0aW9uIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                    };
+                    
+                    const solutionImageCaption = document.createElement('div');
+                    solutionImageCaption.className = 'image-caption';
+                    solutionImageCaption.textContent = `Solution Image: ${solutionImageId}.png`;
+                    
+                    solutionImageWrapper.appendChild(solutionImage);
+                    solutionImageWrapper.appendChild(solutionImageCaption);
+                    imagesContainer.appendChild(solutionImageWrapper);
+                }
+            }
+        }
+        
+        // Format mathematical text to handle special characters and LaTeX
+        function formatMathText(text) {
+            if (!text) return '<span class="status-message">No text available</span>';
+            
+            // Replace newlines with <br>
+            text = text.replace(/\n/g, '<br>');
+            
+            // Basic MathJax-like formatting (if needed, you can integrate MathJax later)
+            return text;
+        }
+        
+        // Format JSON content with syntax highlighting
+        function formatJSON(jsonText) {
+            try {
+                // Try to parse JSON
+                const obj = JSON.parse(jsonText);
+                const formattedJSON = JSON.stringify(obj, null, 4);
+                
+                // Apply syntax highlighting
+                let highlighted = formattedJSON.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+                
+                return highlighted.replace(/\n/g, '<br>').replace(/\s{4}/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                return `<pre>${jsonText}</pre>`;
+            }
+        }
+        
+        // Show error message
+        function showErrorMessage(message) {
+            const elements = [
+                'images-container',
+                'solution-text',
+                'gemini20-response',
+                'gemini25-response',
+                'rubric-text'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                element.innerHTML = `<div class="status-message">${message}</div>`;
+            });
+        }
+        
+        // Event listeners for navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                loadQuestion(currentIndex - 1);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < csvData.length - 1) {
+                loadQuestion(currentIndex + 1);
+            }
+        });
+        
+        // Initialize the app
+        loadCSVData();
+    </script>
+</body>
+</html>
