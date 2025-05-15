@@ -77,7 +77,7 @@ df = pd.read_csv('Filtered_Udvash_Data_with_rubric.csv')
 base_dir = Path('UDV')
 
 # Subjects to process
-subjects = ['Math']
+subjects = ['Chemistry']
 
 # Process each subject
 for subject in subjects:
@@ -157,7 +157,10 @@ for subject in subjects:
         for model_name, model in models.items():
             try:
 
-                response = model.generate_content(contents)
+                if model_name == 'Gemini2.5Pro':
+                    response = type('obj', (object,), {'text': 'Cannot access', 'usage_metadata': None})()
+                else:
+                    response = model.generate_content(contents)
                 
                 # Store results
                 outputs[f'{model_name}_response'] = response.text

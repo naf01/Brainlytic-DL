@@ -332,6 +332,7 @@
         const baseDir = 'UDV';
         const subject = 'Math';
         const evaluatedDir = `${baseDir}/${subject}/Question Images/Evaluated Images`;
+        const unevaluatedDir = `${baseDir}/${subject}/Question Images/Unevaluated Images`;
         const answerDir = `${baseDir}/${subject}/Answer Images`;
         
         // Data storage
@@ -442,8 +443,8 @@
         // Load question data and display
         function loadQuestion(index) {
             if (index < 0 || index >= csvData.length) {
-                console.error('Invalid index:', index);
-                return;
+            console.error('Invalid index:', index);
+            return;
             }
             
             currentIndex = index;
@@ -458,11 +459,11 @@
             // Load images
             loadImages(questionData);
             
-            // Load solution text
-            document.getElementById('solution-text').innerHTML = formatMathText(questionData.solve_text);
+            // Load solution text (use processModelResponse for formatting)
+            document.getElementById('solution-text').innerHTML = processModelResponse(questionData.solve_text);
             
-            // Load rubric text
-            document.getElementById('rubric-text').innerHTML = formatMathText(questionData.rubric);
+            // Load rubric text (use processModelResponse for formatting)
+            document.getElementById('rubric-text').innerHTML = processModelResponse(questionData.rubric);
             
             // Load Gemini 2.0 Flash response
             const gemini20Response = questionData["Gemini2.0Flash_response"];
@@ -496,27 +497,48 @@
             const imagesContainer = document.getElementById('images-container');
             imagesContainer.innerHTML = '';
             
-            // Question image
+            // Evaluated image
             const questionImageFilename = questionData.image_filename;
-            const questionImagePath = `${evaluatedDir}/${questionImageFilename}`;
+            const evaluatedImagePath = `${evaluatedDir}/${questionImageFilename}`;
             
-            const questionImageWrapper = document.createElement('div');
-            questionImageWrapper.className = 'image-wrapper';
+            const evaluatedImageWrapper = document.createElement('div');
+            evaluatedImageWrapper.className = 'image-wrapper';
             
-            const questionImage = document.createElement('img');
-            questionImage.src = questionImagePath;
-            questionImage.alt = 'Student Solution';
-            questionImage.onerror = () => {
-                questionImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjFmMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM4ODg4ODgiPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
+            const evaluatedImage = document.createElement('img');
+            evaluatedImage.src = evaluatedImagePath;
+            evaluatedImage.alt = 'Evaluated Student Solution';
+            evaluatedImage.onerror = () => {
+                evaluatedImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjFmMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM4ODg4ODgiPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
             };
             
-            const questionImageCaption = document.createElement('div');
-            questionImageCaption.className = 'image-caption';
-            questionImageCaption.textContent = `Question Image: ${questionImageFilename}`;
+            const evaluatedImageCaption = document.createElement('div');
+            evaluatedImageCaption.className = 'image-caption';
+            evaluatedImageCaption.textContent = `Evaluated Image: ${questionImageFilename}`;
             
-            questionImageWrapper.appendChild(questionImage);
-            questionImageWrapper.appendChild(questionImageCaption);
-            imagesContainer.appendChild(questionImageWrapper);
+            evaluatedImageWrapper.appendChild(evaluatedImage);
+            evaluatedImageWrapper.appendChild(evaluatedImageCaption);
+            imagesContainer.appendChild(evaluatedImageWrapper);
+            
+            // Unevaluated image (same filename but from unevaluated directory)
+            const unevaluatedImagePath = `${unevaluatedDir}/${questionImageFilename}`;
+            
+            const unevaluatedImageWrapper = document.createElement('div');
+            unevaluatedImageWrapper.className = 'image-wrapper';
+            
+            const unevaluatedImage = document.createElement('img');
+            unevaluatedImage.src = unevaluatedImagePath;
+            unevaluatedImage.alt = 'Unevaluated Student Solution';
+            unevaluatedImage.onerror = () => {
+                unevaluatedImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjFmMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM4ODg4ODgiPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
+            };
+            
+            const unevaluatedImageCaption = document.createElement('div');
+            unevaluatedImageCaption.className = 'image-caption';
+            unevaluatedImageCaption.textContent = `Unevaluated Image: ${questionImageFilename}`;
+            
+            unevaluatedImageWrapper.appendChild(unevaluatedImage);
+            unevaluatedImageWrapper.appendChild(unevaluatedImageCaption);
+            imagesContainer.appendChild(unevaluatedImageWrapper);
             
             // Solution image (if available)
             if (questionData.solution_image_id) {
