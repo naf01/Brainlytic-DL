@@ -67,7 +67,7 @@ You are an expert examiner specialized in evaluating handwritten Bengali exam sc
 models = {
     'Gemini2.0Flash': genai.GenerativeModel('gemini-2.0-flash'),
     'Gemini2.5Flash': genai.GenerativeModel('gemini-2.5-flash-preview-04-17'),
-    'Gemini2.5Pro': genai.GenerativeModel('gemini-2.5-pro-exp-03-25')
+    'Gemini2.5Pro': genai.GenerativeModel('gemini-2.5-pro-preview-03-25')
 }
 
 # Load the original CSV data
@@ -77,7 +77,7 @@ df = pd.read_csv('Filtered_Udvash_Data_with_rubric.csv')
 base_dir = Path('UDV')
 
 # Subjects to process
-subjects = ['Chemistry']
+subjects = ['Math']
 
 # Process each subject
 for subject in subjects:
@@ -157,7 +157,7 @@ for subject in subjects:
         for model_name, model in models.items():
             try:
 
-                if model_name == 'Gemini2.5Pro':
+                if model_name != 'Gemini2.5Pro':
                     response = type('obj', (object,), {'text': 'Cannot access', 'usage_metadata': None})()
                 else:
                     response = model.generate_content(contents)

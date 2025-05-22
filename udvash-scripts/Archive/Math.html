@@ -312,6 +312,24 @@
             </div>
         </div>
 
+        <!-- Block 4.5: Gemini 2.5 Flash Thinker Response -->
+        <div class="block">
+            <div class="block-header">
+                <span>Gemini 2.5 Flash Thinker</span>
+                <div>
+                    <span id="gemini25t-input-tokens" class="token-count">Input: - tokens</span>
+                    <span id="gemini25t-output-tokens" class="token-count">Output: - tokens</span>
+                </div>
+            </div>
+            <div class="block-content">
+                <div class="model-response" id="gemini25t-response">
+                    <div class="loader">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Block 5: Rubric -->
         <div class="block">
             <div class="block-header">
@@ -482,7 +500,16 @@
             document.getElementById('gemini25-input-tokens').textContent = `Input: ${gemini25InputTokens || 'N/A'} tokens`;
             document.getElementById('gemini25-output-tokens').textContent = `Output: ${gemini25OutputTokens || 'N/A'} tokens`;
             document.getElementById('gemini25-response').innerHTML = processModelResponse(gemini25Response);
+
+            // Load Gemini 2.5 Flash Thinker response
+            const gemini25tResponse = questionData["Gemini2.5Flash_thinker_response"];
+            const gemini25tInputTokens = questionData["Gemini2.5Flash_thinker_input_tokens"];
+            const gemini25tOutputTokens = questionData["Gemini2.5Flash_thinker_output_tokens"];
             
+            document.getElementById('gemini25t-input-tokens').textContent = `Input: ${gemini25tInputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25t-output-tokens').textContent = `Output: ${gemini25tOutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25t-response').innerHTML = processModelResponse(gemini25tResponse);
+                        
             // Update navigation button states
             prevBtn.disabled = index === 0;
             nextBtn.disabled = index === csvData.length - 1;
@@ -612,6 +639,7 @@
                 'solution-text',
                 'gemini20-response',
                 'gemini25-response',
+                'gemini25t-response',
                 'rubric-text'
             ];
             
