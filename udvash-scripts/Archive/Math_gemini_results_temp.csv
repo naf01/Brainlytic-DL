@@ -1,4 +1,4 @@
-question_id,image_filename,Marks,solution_image_id,solve_text,subject,rubric,Gemini2.0Flash_response,tags,Gemini2.5Flash_response,tags,Gemini2.5Flash_thinker,tags,Gemini2.0Flash_input_tokens,Gemini2.5Flash_input_tokens,Gemini2.5Flash_Thinker_input_tokens,Gemini2.0Flash_output_tokens,Gemini2.5Flash_output_tokens,Gemini2.5Flash_thinker_output_tokens,Comment
+question_id,image_filename,Marks,solution_image_id,solve_text,subject,rubric,Gemini2.0Flash_response,tags,Gemini2.5Flash_response,tags,Gemini2.5Flash_thinker_response,tags,Gemini2.0Flash_input_tokens,Gemini2.5Flash_input_tokens,Gemini2.5Flash_thinker_input_tokens,Gemini2.0Flash_output_tokens,Gemini2.5Flash_output_tokens,Gemini2.5Flash_thinker_output_tokens,Comment
 1,1002.jpg,2,1001,"ছেদবিন্দু নির্ণয়: x² + ax = 4ax ⇒ x = 0,3a; y = 0,± √3a
 
 ক্ষেত্রফল = 2 \int_0^{3a} (\sqrt{4ax} - x^2 - \sqrt{ax}) dx
