@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Gemini Results Viewer</title>
+    <title>Gemini Results Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         :root {
             --primary-color: #1a73e8;
@@ -58,7 +59,7 @@
             min-width: 200px;
         }
 
-        select, button {
+        select, button, input {
             width: 100%;
             padding: 10px;
             border-radius: 5px;
@@ -225,120 +226,219 @@
         .json-number {
             color: #b22222;
         }
+
+        /* Login form styles */
+        #login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        .login-form {
+            width: 400px;
+            max-width: 90%;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: var(--card-shadow);
+        }
+
+        .login-form h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .error-message {
+            color: #d93025;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        #app-header {
+            position: relative;
+        }
+
+        #logout-btn {
+            position: absolute;
+            top: 0;
+            right: 20px;
+            width: auto;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #subject-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #subject-selector {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Math Gemini Results Viewer</h1>
-        <p>View and compare model evaluations of math solutions</p>
-    </header>
-
-    <div class="controls">
-        <div class="select-container">
-            <select id="question-selector">
-                <option value="">Loading questions...</option>
-            </select>
-        </div>
-        <div class="navigation">
-            <button id="prev-btn">◀ Previous</button>
-            <button id="next-btn">Next ▶</button>
+    <!-- Login Container -->
+    <div id="login-container">
+        <div class="login-form">
+            <h2>Gemini Results Viewer</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="error-message" id="login-error">Invalid username or password</div>
+                </div>
+                <button type="submit">Login</button>
+            </form>
         </div>
     </div>
 
-    <div class="container">
-        <!-- Block 1: Images -->
-        <div class="block">
-            <div class="block-header">
-                <span>Question and Solution Images</span>
-                <span id="question-id" class="token-count">Question ID: -</span>
+    <!-- Main Application Container -->
+    <div id="main-container" class="hidden">
+        <header id="app-header">
+            <button id="logout-btn">Logout</button>
+            <h1>Gemini Results Viewer</h1>
+            <p>View and compare model evaluations of solutions</p>
+        </header>
+
+        <div id="subject-controls" class="controls">
+            <select id="subject-selector">
+                <option value="Math">Mathematics</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+            </select>
+        </div>
+
+        <div class="controls">
+            <div class="select-container">
+                <select id="question-selector">
+                    <option value="">Loading questions...</option>
+                </select>
             </div>
-            <div class="block-content">
-                <div class="images-container" id="images-container">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
+            <div class="navigation">
+                <button id="prev-btn">◀ Previous</button>
+                <button id="next-btn">Next ▶</button>
             </div>
         </div>
 
-        <!-- Block 2: Solution Text -->
-        <div class="block">
-            <div class="block-header">
-                <span>Expected Solution</span>
-                <span id="marks" class="token-count">Marks: -</span>
-            </div>
-            <div class="block-content">
-                <div class="solution-text" id="solution-text">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
+        <div class="container">
+            <!-- Block 1: Images -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Question and Solution Images</span>
+                    <span id="question-id" class="token-count">Question ID: -</span>
+                </div>
+                <div class="block-content">
+                    <div class="images-container" id="images-container">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Block 3: Gemini 2.0 Flash Response -->
-        <div class="block">
-            <div class="block-header">
-                <span>Gemini 2.0 Flash</span>
-                <div>
-                    <span id="gemini20-input-tokens" class="token-count">Input: - tokens</span>
-                    <span id="gemini20-output-tokens" class="token-count">Output: - tokens</span>
+            <!-- Block 2: Solution Text -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Expected Solution</span>
+                    <span id="marks" class="token-count">Marks: -</span>
                 </div>
-            </div>
-            <div class="block-content">
-                <div class="model-response" id="gemini20-response">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
+                <div class="block-content">
+                    <div class="solution-text" id="solution-text">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Block 4: Gemini 2.5 Flash Response -->
-        <div class="block">
-            <div class="block-header">
-                <span>Gemini 2.5 Flash</span>
-                <div>
-                    <span id="gemini25-input-tokens" class="token-count">Input: - tokens</span>
-                    <span id="gemini25-output-tokens" class="token-count">Output: - tokens</span>
+            <!-- Block 3: Gemini 2.0 Flash Response -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Gemini 2.0 Flash</span>
+                    <div>
+                        <span id="gemini20-input-tokens" class="token-count">Input: - tokens</span>
+                        <span id="gemini20-output-tokens" class="token-count">Output: - tokens</span>
+                    </div>
                 </div>
-            </div>
-            <div class="block-content">
-                <div class="model-response" id="gemini25-response">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
+                <div class="block-content">
+                    <div class="model-response" id="gemini20-response">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Block 4.5: Gemini 2.5 Flash Thinker Response -->
-        <div class="block">
-            <div class="block-header">
-                <span>Gemini 2.5 Flash Thinker</span>
-                <div>
-                    <span id="gemini25t-input-tokens" class="token-count">Input: - tokens</span>
-                    <span id="gemini25t-output-tokens" class="token-count">Output: - tokens</span>
+            <!-- Block 4: Gemini 2.5 Flash Response -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Gemini 2.5 Flash</span>
+                    <div>
+                        <span id="gemini25-input-tokens" class="token-count">Input: - tokens</span>
+                        <span id="gemini25-output-tokens" class="token-count">Output: - tokens</span>
+                    </div>
                 </div>
-            </div>
-            <div class="block-content">
-                <div class="model-response" id="gemini25t-response">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
+                <div class="block-content">
+                    <div class="model-response" id="gemini25-response">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Block 5: Rubric -->
-        <div class="block">
-            <div class="block-header">
-                <span>Marking Rubric</span>
+            <!-- Block 4.5: Gemini 2.5 Flash Thinker Response -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Gemini 2.5 Flash Thinker</span>
+                    <div>
+                        <span id="gemini25t-input-tokens" class="token-count">Input: - tokens</span>
+                        <span id="gemini25t-output-tokens" class="token-count">Output: - tokens</span>
+                    </div>
+                </div>
+                <div class="block-content">
+                    <div class="model-response" id="gemini25t-response">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="block-content">
-                <div class="solution-text" id="rubric-text">
-                    <div class="loader">
-                        <div class="loading-spinner"></div>
+
+            <!-- Block 5: Rubric -->
+            <div class="block">
+                <div class="block-header">
+                    <span>Marking Rubric</span>
+                </div>
+                <div class="block-content">
+                    <div class="solution-text" id="rubric-text">
+                        <div class="loader">
+                            <div class="loading-spinner"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -346,12 +446,110 @@
     </div>
 
     <script>
+        // Authentication constants (hash only, not actual credentials)
+        const AUTH_HASH = "46f883f62f886f1af06862658286cfbc2a6069c66fe1b104fa016ae046963b0f";
+        const AUTH_COOKIE_NAME = "gemini_viewer_auth";
+        const AUTH_COOKIE_EXPIRY_DAYS = 1;
+        
+        // DOM elements
+        const loginContainer = document.getElementById('login-container');
+        const mainContainer = document.getElementById('main-container');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const subjectSelector = document.getElementById('subject-selector');
+        
+        // Check if user is authenticated
+        function checkAuth() {
+            const authCookie = getCookie(AUTH_COOKIE_NAME);
+            
+            if (authCookie === AUTH_HASH) {
+                showMainApp();
+            } else {
+                showLoginForm();
+            }
+        }
+        
+        // Show login form
+        function showLoginForm() {
+            loginContainer.classList.remove('hidden');
+            mainContainer.classList.add('hidden');
+        }
+        
+        // Show main app
+        function showMainApp() {
+            loginContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+            
+            // Load the selected subject's data
+            loadSubjectData();
+        }
+        
+        // Set cookie
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/;SameSite=Strict";
+        }
+        
+        // Get cookie
+        function getCookie(name) {
+            const cookieName = name + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+            
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i];
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1);
+                }
+                if (cookie.indexOf(cookieName) === 0) {
+                    return cookie.substring(cookieName.length, cookie.length);
+                }
+            }
+            return "";
+        }
+        
+        // Delete cookie
+        function deleteCookie(name) {
+            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+        
+        // Handle login form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Create combined string and hash it
+            const combined = JSON.stringify({
+                username: username,
+                password: password
+            });
+            
+            const hash = sha256(combined);
+            
+            // Check if hash matches
+            if (hash === AUTH_HASH) {
+                setCookie(AUTH_COOKIE_NAME, AUTH_HASH, AUTH_COOKIE_EXPIRY_DAYS);
+                showMainApp();
+                loginError.style.display = 'none';
+            } else {
+                loginError.style.display = 'block';
+            }
+        });
+        
+        // Handle logout
+        logoutBtn.addEventListener('click', function() {
+            deleteCookie(AUTH_COOKIE_NAME);
+            showLoginForm();
+        });
+        
         // Base directory structure
         const baseDir = 'UDV';
-        const subject = 'Math';
-        const evaluatedDir = `${baseDir}/${subject}/Question Images/Evaluated Images`;
-        const unevaluatedDir = `${baseDir}/${subject}/Question Images/Unevaluated Images`;
-        const answerDir = `${baseDir}/${subject}/Answer Images`;
+        let subject = 'Math'; // Default subject
         
         // Data storage
         let csvData = [];
@@ -362,12 +560,56 @@
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         
+        // Handle subject change
+        subjectSelector.addEventListener('change', function() {
+            subject = subjectSelector.value;
+            loadSubjectData();
+        });
+        
+        // Load subject data
+        function loadSubjectData() {
+            csvData = [];
+            currentIndex = 0;
+            
+            // Update paths based on selected subject
+            const evaluatedDir = `${baseDir}/${subject}/Question Images/Evaluated Images`;
+            const unevaluatedDir = `${baseDir}/${subject}/Question Images/Unevaluated Images`;
+            const answerDir = `${baseDir}/${subject}/Answer Images`;
+            
+            // Reset UI elements
+            document.getElementById('question-selector').innerHTML = '<option value="">Loading questions...</option>';
+            
+            // Show loading indicators
+            showLoadingIndicators();
+            
+            // Load CSV data
+            loadCSVData();
+        }
+        
+        // Show loading indicators
+        function showLoadingIndicators() {
+            const elements = [
+                'images-container',
+                'solution-text',
+                'gemini20-response',
+                'gemini25-response',
+                'gemini25t-response',
+                'rubric-text'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                element.innerHTML = `<div class="loader"><div class="loading-spinner"></div></div>`;
+            });
+        }
+        
         // Load CSV data using Papa Parse
         async function loadCSVData() {
             try {
-                const response = await fetch('Math_gemini_results_temp.csv');
+                const csvFilename = `${subject}_gemini_results_temp.csv`;
+                const response = await fetch(csvFilename);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch CSV data');
+                    throw new Error(`Failed to fetch CSV data for ${subject}`);
                 }
                 
                 const csvText = await response.text();
@@ -390,6 +632,8 @@
                         // Load the first question
                         if (csvData.length > 0) {
                             loadQuestion(0);
+                        } else {
+                            showErrorMessage(`No data available for ${subject}`);
                         }
                     },
                     error: function(error) {
@@ -399,16 +643,13 @@
                 });
             } catch (error) {
                 console.error('Error loading CSV data:', error);
-                showErrorMessage('Failed to load data. Please refresh the page.');
+                showErrorMessage(`Failed to load data for ${subject}. Please try again.`);
             }
         }
         
         // Process model response
         function processModelResponse(response) {
             if (!response) return '<span class="status-message">No response available</span>';
-            
-            // For debugging
-            console.log('Processing response:', response.substring(0, 100) + '...');
             
             // Check if it's a JSON response (might be surrounded by markdown code blocks)
             if (response.includes('```json')) {
@@ -443,86 +684,104 @@
             questionSelector.innerHTML = '';
             
             csvData.forEach((row, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `Question ${row.question_id} - ${row.image_filename}`;
-                questionSelector.appendChild(option);
-            });
-            
-            // Add event listener
-            questionSelector.addEventListener('change', () => {
-                const selectedIndex = parseInt(questionSelector.value);
-                if (!isNaN(selectedIndex)) {
-                    loadQuestion(selectedIndex);
+                if (row && row.question_id && row.image_filename) {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `Question ${row.question_id} - ${row.image_filename}`;
+                    questionSelector.appendChild(option);
                 }
             });
+            
+            // Remove existing event listener if any
+            questionSelector.removeEventListener('change', handleQuestionChange);
+            
+            // Add event listener
+            questionSelector.addEventListener('change', handleQuestionChange);
+        }
+
+        // Handle question change event
+        function handleQuestionChange() {
+            const selectedIndex = parseInt(questionSelector.value);
+            if (!isNaN(selectedIndex)) {
+                loadQuestion(selectedIndex);
+            }
         }
         
         // Load question data and display
         function loadQuestion(index) {
             if (index < 0 || index >= csvData.length) {
-            console.error('Invalid index:', index);
-            return;
+                console.error('Invalid index:', index);
+                return;
             }
             
             currentIndex = index;
-            questionSelector.value = index;
+            questionSelector.value = index.toString();
             
             const questionData = csvData[index];
+            if (!questionData) {
+                showErrorMessage('Question data is missing');
+                return;
+            }
             
             // Update question ID and marks
-            document.getElementById('question-id').textContent = `Question ID: ${questionData.question_id}`;
-            document.getElementById('marks').textContent = `Marks: ${questionData.Marks}`;
+            document.getElementById('question-id').textContent = `Question ID: ${questionData.question_id || 'N/A'}`;
+            document.getElementById('marks').textContent = `Marks: ${questionData.Marks || 'N/A'}`;
             
             // Load images
             loadImages(questionData);
             
-            // Load solution text (use processModelResponse for formatting)
-            document.getElementById('solution-text').innerHTML = processModelResponse(questionData.solve_text);
+            // Load solution text
+            document.getElementById('solution-text').innerHTML = processModelResponse(questionData.solve_text || '');
             
-            // Load rubric text (use processModelResponse for formatting)
-            document.getElementById('rubric-text').innerHTML = processModelResponse(questionData.rubric);
+            // Load rubric text
+            document.getElementById('rubric-text').innerHTML = processModelResponse(questionData.rubric || '');
             
             // Load Gemini 2.0 Flash response
-            const gemini20Response = questionData["Gemini2.0Flash_response"];
-            const gemini20InputTokens = questionData["Gemini2.0Flash_input_tokens"];
-            const gemini20OutputTokens = questionData["Gemini2.0Flash_output_tokens"];
+            const gemini20Response = questionData["Gemini2.0Flash_response"] || '';
+            const gemini20InputTokens = questionData["Gemini2.0Flash_input_tokens"] || 'N/A';
+            const gemini20OutputTokens = questionData["Gemini2.0Flash_output_tokens"] || 'N/A';
             
-            document.getElementById('gemini20-input-tokens').textContent = `Input: ${gemini20InputTokens || 'N/A'} tokens`;
-            document.getElementById('gemini20-output-tokens').textContent = `Output: ${gemini20OutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini20-input-tokens').textContent = `Input: ${gemini20InputTokens} tokens`;
+            document.getElementById('gemini20-output-tokens').textContent = `Output: ${gemini20OutputTokens} tokens`;
             document.getElementById('gemini20-response').innerHTML = processModelResponse(gemini20Response);
             
             // Load Gemini 2.5 Flash response
-            const gemini25Response = questionData["Gemini2.5Flash_response"];
-            const gemini25InputTokens = questionData["Gemini2.5Flash_input_tokens"];
-            const gemini25OutputTokens = questionData["Gemini2.5Flash_output_tokens"];
+            const gemini25Response = questionData["Gemini2.5Flash_response"] || '';
+            const gemini25InputTokens = questionData["Gemini2.5Flash_input_tokens"] || 'N/A';
+            const gemini25OutputTokens = questionData["Gemini2.5Flash_output_tokens"] || 'N/A';
             
-            document.getElementById('gemini25-input-tokens').textContent = `Input: ${gemini25InputTokens || 'N/A'} tokens`;
-            document.getElementById('gemini25-output-tokens').textContent = `Output: ${gemini25OutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25-input-tokens').textContent = `Input: ${gemini25InputTokens} tokens`;
+            document.getElementById('gemini25-output-tokens').textContent = `Output: ${gemini25OutputTokens} tokens`;
             document.getElementById('gemini25-response').innerHTML = processModelResponse(gemini25Response);
 
             // Load Gemini 2.5 Flash Thinker response
-            const gemini25tResponse = questionData["Gemini2.5Flash_thinker_response"];
-            const gemini25tInputTokens = questionData["Gemini2.5Flash_thinker_input_tokens"];
-            const gemini25tOutputTokens = questionData["Gemini2.5Flash_thinker_output_tokens"];
+            const gemini25tResponse = questionData["Gemini2.5Flash_thinker_response"] || '';
+            const gemini25tInputTokens = questionData["Gemini2.5Flash_thinker_input_tokens"] || 'N/A';
+            const gemini25tOutputTokens = questionData["Gemini2.5Flash_thinker_output_tokens"] || 'N/A';
             
-            document.getElementById('gemini25t-input-tokens').textContent = `Input: ${gemini25tInputTokens || 'N/A'} tokens`;
-            document.getElementById('gemini25t-output-tokens').textContent = `Output: ${gemini25tOutputTokens || 'N/A'} tokens`;
+            document.getElementById('gemini25t-input-tokens').textContent = `Input: ${gemini25tInputTokens} tokens`;
+            document.getElementById('gemini25t-output-tokens').textContent = `Output: ${gemini25tOutputTokens} tokens`;
             document.getElementById('gemini25t-response').innerHTML = processModelResponse(gemini25tResponse);
                         
             // Update navigation button states
             prevBtn.disabled = index === 0;
             nextBtn.disabled = index === csvData.length - 1;
-            
-            // For debugging - log the responses
-            console.log('Gemini 2.0 Flash response:', gemini20Response);
-            console.log('Gemini 2.5 Flash response:', gemini25Response);
         }
         
         // Load question and solution images
         function loadImages(questionData) {
             const imagesContainer = document.getElementById('images-container');
             imagesContainer.innerHTML = '';
+            
+            if (!questionData || !questionData.image_filename) {
+                imagesContainer.innerHTML = '<div class="status-message">No image data available</div>';
+                return;
+            }
+            
+            // Get paths based on current subject
+            const evaluatedDir = `${baseDir}/${subject}/Question Images/Evaluated Images`;
+            const unevaluatedDir = `${baseDir}/${subject}/Question Images/Unevaluated Images`;
+            const answerDir = `${baseDir}/${subject}/Answer Images`;
             
             // Evaluated image
             const questionImageFilename = questionData.image_filename;
@@ -594,17 +853,6 @@
             }
         }
         
-        // Format mathematical text to handle special characters and LaTeX
-        function formatMathText(text) {
-            if (!text) return '<span class="status-message">No text available</span>';
-            
-            // Replace newlines with <br>
-            text = text.replace(/\n/g, '<br>');
-            
-            // Basic MathJax-like formatting (if needed, you can integrate MathJax later)
-            return text;
-        }
-        
         // Format JSON content with syntax highlighting
         function formatJSON(jsonText) {
             try {
@@ -662,8 +910,8 @@
             }
         });
         
-        // Initialize the app
-        loadCSVData();
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
 </html>
